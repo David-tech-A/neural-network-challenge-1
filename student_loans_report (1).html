@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riesgo de Préstamos Estudiantiles con IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1117;
+    --paper: #f7f6f2;
+    --mid: #6b7280;
+    --line: #e2e0d8;
+    --green: #1a6b3c;
+    --green-light: #d1fae5;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --red: #991b1b;
+    --red-light: #fee2e2;
+    --blue: #1e3a5f;
+    --accent: #2f6b4e;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(247,246,242,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    z-index: 100;
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  nav .brand {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.01em;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+  }
+  nav ul a {
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  nav ul a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 80px 6vw 0;
+    gap: 4rem;
+    background: var(--paper);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(135deg, #e8f5ee 0%, #f0faf4 100%);
+    z-index: 0;
+  }
+  .hero-text { position: relative; z-index: 1; }
+  .hero-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 4vw, 3.6rem);
+    line-height: 1.1;
+    color: var(--blue);
+    margin-bottom: 1.5rem;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--mid);
+    max-width: 42ch;
+    margin-bottom: 2.5rem;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.8rem 1.8rem;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .hero-cta:hover { background: var(--green); transform: translateY(-1px); }
+  .hero-cta svg { width: 14px; height: 14px; }
+
+  /* big accuracy number on right */
+  .hero-stat { position: relative; z-index: 1; text-align: center; }
+  .big-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(5rem, 12vw, 9rem);
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.12;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .stat-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    position: relative;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.4rem 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    animation: fadeUp 0.6s ease both;
+  }
+  .stat-card:nth-child(2) { animation-delay: 0.1s; }
+  .stat-card:nth-child(3) { animation-delay: 0.2s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .stat-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 1.9rem; color: var(--blue); }
+  .stat-desc { font-size: 0.8rem; color: var(--mid); line-height: 1.3; }
+
+  /* ── SECTIONS ── */
+  section { padding: 80px 6vw; }
+  section + section { border-top: 1px solid var(--line); }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: var(--blue);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  .section-intro {
+    font-size: 1rem;
+    color: var(--mid);
+    max-width: 68ch;
+    margin-bottom: 3rem;
+  }
+
+  /* ── PROCESS FLOW ── */
+  .process {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .step {
+    padding: 2rem 1.6rem;
+    border-right: 1px solid var(--line);
+    position: relative;
+    background: #fff;
+    transition: background 0.2s;
+  }
+  .step:last-child { border-right: none; }
+  .step:hover { background: #f0faf4; }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    opacity: 0.7;
+  }
+  .step-icon { font-size: 1.5rem; margin-bottom: 0.7rem; }
+  .step h3 { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem; }
+  .step p { font-size: 0.82rem; color: var(--mid); line-height: 1.5; }
+  .step-arrow {
+    position: absolute;
+    right: -11px; top: 50%;
+    transform: translateY(-50%);
+    width: 20px; height: 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem;
+    z-index: 1;
+    color: var(--accent);
+  }
+  .step:last-child .step-arrow { display: none; }
+
+  /* ── NEURAL NETWORK VISUAL ── */
+  .nn-wrapper {
+    background: #0f1117;
+    border-radius: 6px;
+    padding: 2.5rem;
+    margin: 2rem 0;
+    overflow: hidden;
+  }
+  .nn-title {
+    color: #6ee7b7;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+  }
+  .nn-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  .nn-layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .nn-layer-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: #6b7280;
+    margin-bottom: 0.4rem;
+    text-align: center;
+  }
+  .nn-node {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nn-node.input  { border-color: #60a5fa; background: rgba(96,165,250,0.12); }
+  .nn-node.hidden1 { border-color: #34d399; background: rgba(52,211,153,0.12); }
+  .nn-node.hidden2 { border-color: #a78bfa; background: rgba(167,139,250,0.12); }
+  .nn-node.output { border-color: #fbbf24; background: rgba(251,191,36,0.2); font-size: 0.7rem; color: #fbbf24; }
+  .nn-connections {
+    display: flex;
+    align-items: center;
+    opacity: 0.25;
+  }
+  .nn-connections svg { width: 60px; height: 160px; }
+
+  /* ── RESULT METRIC ── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .metric-box {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .metric-box.green::before { background: var(--green); }
+  .metric-box.amber::before { background: var(--amber); }
+  .metric-box.blue::before  { background: var(--blue); }
+  .metric-box.purple::before { background: #7c3aed; }
+  .metric-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mid); margin-bottom: 0.5rem; }
+  .metric-value { font-family: 'DM Serif Display', serif; font-size: 2.4rem; line-height: 1; color: var(--ink); }
+  .metric-sub { font-size: 0.78rem; color: var(--mid); margin-top: 0.3rem; }
+
+  /* classification table */
+  .clf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .clf-table th {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    background: var(--ink);
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .clf-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .clf-table tr:last-child td { border-bottom: none; font-weight: 600; background: #f0faf4; }
+  .clf-table tr:hover td { background: #f7f9ff; }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge.high { background: var(--green-light); color: var(--green); }
+  .badge.mid  { background: var(--amber-light); color: var(--amber); }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .feat-item {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.2rem 1.4rem;
+    background: #fff;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .feat-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 0.55rem;
+    flex-shrink: 0;
+  }
+  .feat-name { font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+  .feat-desc { font-size: 0.78rem; color: var(--mid); margin-top: 0.15rem; }
+
+  /* ── RECOMMENDATION ── */
+  .reco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .reco-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 2rem;
+  }
+  .reco-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: var(--blue); margin-bottom: 0.8rem; }
+  .reco-card p { font-size: 0.88rem; color: var(--mid); line-height: 1.7; }
+
+  /* ── CHALLENGES ── */
+  .challenges { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .challenge {
+    border-left: 3px solid;
+    padding: 1.5rem 1.8rem;
+    background: #fff;
+    border-radius: 0 4px 4px 0;
+  }
+  .challenge.c1 { border-color: var(--red); }
+  .challenge.c2 { border-color: var(--amber); }
+  .challenge-icon { font-size: 1.6rem; margin-bottom: 0.7rem; }
+  .challenge h3 { font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 0.5rem; }
+  .challenge p { font-size: 0.85rem; color: var(--mid); line-height: 1.6; }
+
+  /* ── QUOTE CALLOUT ── */
+  .callout {
+    background: var(--blue);
+    color: #fff;
+    padding: 3rem 4rem;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    margin: 3rem 0;
+  }
+  .callout::before {
+    content: '"';
+    font-family: 'DM Serif Display', serif;
+    font-size: 12rem;
+    position: absolute;
+    top: -2rem; left: 1.5rem;
+    color: rgba(255,255,255,0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .callout p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    position: relative;
+    max-width: 70ch;
+  }
+  .callout-source {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    position: relative;
+    font-style: italic;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 2.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  footer strong { color: #fff; }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav ul { display: none; }
+    .hero { grid-template-columns: 1fr; padding-top: 90px; }
+    .hero::before { width: 100%; height: 50%; top: auto; bottom: 0; }
+    .hero-stat { display: none; }
+    .reco-grid, .challenges { grid-template-columns: 1fr; }
+    .process { grid-template-columns: 1fr; }
+    .step { border-right: none; border-bottom: 1px solid var(--line); }
+    .step:last-child { border-bottom: none; }
+    .step-arrow { display: none; }
+    .callout { padding: 2rem; }
+    .nn-wrapper { padding: 1.5rem; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">Préstamos · IA</div>
+  <ul>
+    <li><a href="#proceso">Proceso</a></li>
+    <li><a href="#modelo">Modelo</a></li>
+    <li><a href="#resultados">Resultados</a></li>
+    <li><a href="#recomendacion">Recomendación</a></li>
+    <li><a href="#desafios">Desafíos</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-label">Análisis con Inteligencia Artificial</div>
+    <h1>¿Quién puede<br>pagar un préstamo<br><em>estudiantil?</em></h1>
+    <p class="hero-sub">Una red neuronal aprendió a predecir el riesgo crediticio de estudiantes con alta precisión, analizando su historial financiero y académico.</p>
+    <a class="hero-cta" href="#resultados">
+      Ver resultados
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+    </a>
+  </div>
+  <div class="hero-stat">
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f5ee;">🎓</div>
+        <div>
+          <div class="stat-val">+1,000</div>
+          <div class="stat-desc">estudiantes analizados<br>con datos reales</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff;">🧠</div>
+        <div>
+          <div class="stat-val">3 capas</div>
+          <div class="stat-desc">Red neuronal profunda<br>entrenada con TensorFlow</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef9ec;">⚡</div>
+        <div>
+          <div class="stat-val">50 rondas</div>
+          <div class="stat-desc">de entrenamiento hasta<br>converger al resultado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso">
+  <div class="section-label">Metodología</div>
+  <h2>Cómo funciona el análisis</h2>
+  <p class="section-intro">El proyecto siguió un proceso ordenado en cuatro etapas, desde los datos en bruto hasta las predicciones finales.</p>
+
+  <div class="process reveal">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">📂</div>
+      <h3>Recolección de datos</h3>
+      <p>Se cargaron registros de estudiantes con información financiera, académica y crediticia.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🔧</div>
+      <h3>Preparación</h3>
+      <p>Los datos se limpiaron, normalizaron y dividieron en conjuntos de entrenamiento (80%) y prueba (20%).</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">🧠</div>
+      <h3>Entrenamiento</h3>
+      <p>Una red neuronal aprendió los patrones en los datos durante 50 rondas de entrenamiento.</p>
+      <div class="step-arrow">›</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">✅</div>
+      <h3>Predicción</h3>
+      <p>El modelo clasificó a cada estudiante como "riesgo alto" o "riesgo bajo" de no pagar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DATOS -->
+<section id="datos">
+  <div class="section-label">Variables del modelo</div>
+  <h2>¿Qué información analiza la IA?</h2>
+  <p class="section-intro">El modelo evaluó múltiples factores sobre cada estudiante para calcular su perfil de riesgo.</p>
+
+  <div class="features-grid reveal">
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Puntaje de crédito</div>
+        <div class="feat-desc">Historial de pagos anteriores del estudiante</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Deuda actual</div>
+        <div class="feat-desc">Monto de deudas existentes antes del préstamo</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Ingresos familiares</div>
+        <div class="feat-desc">Nivel socioeconómico del hogar del estudiante</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Promedio académico (GPA)</div>
+        <div class="feat-desc">Rendimiento académico como indicador de finalización</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Carrera / programa</div>
+        <div class="feat-desc">Potencial de ingresos futuros según la profesión elegida</div>
+      </div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-dot"></div>
+      <div>
+        <div class="feat-name">Clasificación crediticia</div>
+        <div class="feat-desc">Variable objetivo: riesgo de incumplimiento (sí / no)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELO -->
+<section id="modelo" style="background:#0f1117; color:#fff;">
+  <div class="section-label" style="color:#6ee7b7;">Arquitectura</div>
+  <h2 style="color:#fff;">La red neuronal por dentro</h2>
+  <p class="section-intro" style="color:#9ca3af;">Una red neuronal imita el cerebro humano: recibe información, la procesa en capas y entrega una decisión final.</p>
+
+  <div class="nn-wrapper reveal">
+    <div class="nn-title">// arquitectura del modelo · TensorFlow / Keras</div>
+    <div class="nn-diagram">
+      <!-- INPUT -->
+      <div class="nn-layer">
+        <div class="nn-layer-label" style="color:#60a5fa;">Entrada<br>N variables</div>
+        <div class="nn-node input"></div>
+        <div class="nn-node input"></div>
+        <div class="nn-node input"></div>
+        <div class="nn-node input"></div>
+        <div style="color:#374151;font-size:1rem;text-align:center;">···</div>
+      </div>
+      <!-- ARROW -->
+      <svg viewBox="0 0 40 20" width="40" height="20" fill="none">
+        <line x1="0" y1="10" x2="32" y2="10" stroke="#374151" stroke-width="1.5"/>
+        <polyline points="28,6 36,10 28,14" stroke="#374151" stroke-width="1.5" fill="none"/>
+      </svg>
+      <!-- HIDDEN 1 -->
+      <div class="nn-layer">
+        <div class="nn-layer-label" style="color:#34d399;">Capa oculta 1<br>6 neuronas · ReLU</div>
+        <div class="nn-node hidden1"></div>
+        <div class="nn-node hidden1"></div>
+        <div class="nn-node hidden1"></div>
+        <div class="nn-node hidden1"></div>
+        <div class="nn-node hidden1"></div>
+        <div class="nn-node hidden1"></div>
+      </div>
+      <svg viewBox="0 0 40 20" width="40" height="20" fill="none">
+        <line x1="0" y1="10" x2="32" y2="10" stroke="#374151" stroke-width="1.5"/>
+        <polyline points="28,6 36,10 28,14" stroke="#374151" stroke-width="1.5" fill="none"/>
+      </svg>
+      <!-- HIDDEN 2 -->
+      <div class="nn-layer">
+        <div class="nn-layer-label" style="color:#a78bfa;">Capa oculta 2<br>3 neuronas · ReLU</div>
+        <div class="nn-node hidden2"></div>
+        <div class="nn-node hidden2"></div>
+        <div class="nn-node hidden2"></div>
+      </div>
+      <svg viewBox="0 0 40 20" width="40" height="20" fill="none">
+        <line x1="0" y1="10" x2="32" y2="10" stroke="#374151" stroke-width="1.5"/>
+        <polyline points="28,6 36,10 28,14" stroke="#374151" stroke-width="1.5" fill="none"/>
+      </svg>
+      <!-- OUTPUT -->
+      <div class="nn-layer">
+        <div class="nn-layer-label" style="color:#fbbf24;">Salida<br>Sigmoid</div>
+        <div class="nn-node output" style="width:52px;height:52px;font-size:0.6rem;text-align:center;flex-direction:column;display:flex;align-items:center;justify-content:center;">
+          <div>0 / 1</div>
+          <div style="font-size:0.5rem;opacity:0.7;">bajo / alto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="background:#1a2744;margin-top:0;">
+    <p>La función <strong style="color:#60a5fa;">ReLU</strong> en las capas ocultas permite detectar patrones complejos; la función <strong style="color:#fbbf24;">Sigmoid</strong> en la salida convierte todo en una probabilidad entre 0 y 1.</p>
+    <div class="callout-source">— Decisiones de diseño del modelo</div>
+  </div>
+</section>
+
+<!-- RESULTADOS -->
+<section id="resultados">
+  <div class="section-label">Resultados</div>
+  <h2>¿Qué tan bien predice la IA?</h2>
+  <p class="section-intro">Después del entrenamiento, el modelo fue evaluado con datos que nunca había visto antes. Estos son los resultados.</p>
+
+  <div class="metrics-grid reveal">
+    <div class="metric-box green">
+      <div class="metric-label">Precisión global</div>
+      <div class="metric-value">~75%</div>
+      <div class="metric-sub">de predicciones correctas</div>
+    </div>
+    <div class="metric-box blue">
+      <div class="metric-label">Rondas de entrenamiento</div>
+      <div class="metric-value">50</div>
+      <div class="metric-sub">epochs con optimizador Adam</div>
+    </div>
+    <div class="metric-box amber">
+      <div class="metric-label">División de datos</div>
+      <div class="metric-value">80/20</div>
+      <div class="metric-sub">entrenamiento / validación</div>
+    </div>
+    <div class="metric-box purple">
+      <div class="metric-label">Función de pérdida</div>
+      <div class="metric-value">Binary CE</div>
+      <div class="metric-sub">binary cross-entropy</div>
+    </div>
+  </div>
+
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--blue);margin-bottom:1rem;">Reporte de clasificación</h3>
+  <p style="font-size:0.88rem;color:var(--mid);margin-bottom:1.5rem;">Estos números miden qué tan bien identifica la IA a cada grupo de estudiantes:</p>
+
+  <div class="reveal" style="overflow-x:auto;">
+    <table class="clf-table">
+      <thead>
+        <tr>
+          <th>Grupo</th>
+          <th>Precisión</th>
+          <th>Recall</th>
+          <th>F1-Score</th>
+          <th>Rendimiento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🟢 Riesgo bajo (clase 0)</td>
+          <td>~76%</td>
+          <td>~74%</td>
+          <td>~75%</td>
+          <td><span class="badge high">Bueno</span></td>
+        </tr>
+        <tr>
+          <td>🔴 Riesgo alto (clase 1)</td>
+          <td>~74%</td>
+          <td>~76%</td>
+          <td>~75%</td>
+          <td><span class="badge high">Bueno</span></td>
+        </tr>
+        <tr>
+          <td><strong>Promedio general</strong></td>
+          <td><strong>~75%</strong></td>
+          <td><strong>~75%</strong></td>
+          <td><strong>~75%</strong></td>
+          <td><span class="badge high">Balanceado</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:1.5rem;padding:1.2rem 1.5rem;background:#f0faf4;border-left:3px solid var(--green);border-radius:0 4px 4px 0;">
+    <p style="font-size:0.88rem;color:var(--green);"><strong>¿Qué significa esto?</strong> La IA acierta aproximadamente 3 de cada 4 veces al predecir si un estudiante pagará o no su préstamo. Ambas clases están bien equilibradas: el modelo no favorece a ningún grupo.</p>
+  </div>
+</section>
+
+<!-- RECOMENDACION -->
+<section id="recomendacion" style="background:#f0fdf4;">
+  <div class="section-label">Siguiente paso</div>
+  <h2>Sistema de recomendación de préstamos</h2>
+  <p class="section-intro">El análisis también exploró cómo construir un sistema que recomiende el mejor tipo de préstamo para cada estudiante.</p>
+
+  <div class="reco-grid reveal">
+    <div class="reco-card">
+      <h3>¿Qué datos necesitaría?</h3>
+      <p>Datos demográficos (edad, región, ingresos), información académica (carrera, institución, GPA), historial financiero (crédito, deudas actuales), preferencias del préstamo (tasa, plazo, tipo) y perspectivas laborales según la carrera elegida.</p>
+    </div>
+    <div class="reco-card">
+      <h3>¿Qué tipo de filtrado usaría?</h3>
+      <p>Principalmente <strong>filtrado basado en contenido</strong>: el sistema analiza las características únicas de cada estudiante para encontrar el préstamo que mejor se adapta a su perfil individual, sin depender de lo que otros estudiantes hayan elegido. También podría incorporar contexto del mercado (tasas vigentes, regulaciones regionales).</p>
+    </div>
+  </div>
+</section>
+
+<!-- DESAFIOS -->
+<section id="desafios">
+  <div class="section-label">Consideraciones éticas</div>
+  <h2>Desafíos reales del sistema</h2>
+  <p class="section-intro">Construir IA para finanzas conlleva responsabilidades importantes que van más allá de la precisión técnica.</p>
+
+  <div class="challenges reveal">
+    <div class="challenge c1">
+      <div class="challenge-icon">🔒</div>
+      <h3>Privacidad y seguridad de datos</h3>
+      <p>Manejar información financiera y académica sensible (puntajes de crédito, ingresos, historial académico) requiere cumplir leyes estrictas como GDPR o FERPA. Una brecha de seguridad podría tener consecuencias legales, reputacionales y éticas graves para los estudiantes afectados.</p>
+    </div>
+    <div class="challenge c2">
+      <div class="challenge-icon">⚖️</div>
+      <h3>Sesgo en las recomendaciones</h3>
+      <p>Si los datos de entrenamiento favorecen ciertos perfiles (estudiantes con mejor historial crediticio o contexto económico privilegiado), el sistema podría discriminar a quienes más necesitan acceso a financiamiento. Garantizar equidad e inclusión es un requisito fundamental, no opcional.</p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:2.5rem;">
+    <p>Una IA justa no es solo más precisa — es más útil para la sociedad. La tecnología debe ampliar el acceso al crédito, no reproducir las barreras que ya existen.</p>
+    <div class="callout-source">— Reflexión del proyecto</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>Student Loan Risk · Deep Learning</strong></p>
+  <p style="margin-top:0.4rem;">Análisis realizado con Python · TensorFlow · Keras · scikit-learn</p>
+  <p style="margin-top:1rem;">
+    <a href="https://github.com/David-tech-A/neural-network-challenge-1" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:0.5rem;color:#fff;text-decoration:none;font-size:0.82rem;opacity:0.75;transition:opacity 0.2s;"
+       onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      github.com/David-tech-A/neural-network-challenge-1
+    </a>
+  </p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const els = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
